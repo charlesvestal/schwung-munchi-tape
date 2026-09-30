@@ -1,0 +1,14 @@
+1600 on 34
+1700 off 34
+1800 on 18
+2100 off 18
+2800 on 25
+3100 off 25
+3600 on 34
+3700 off 34
+3800 on 33
+3900 off 33
+# now playing loop only, then space knob up
+6000 enc 3.0 30
+9000 enc 4.0 -40
+12000 end

@@ -1,0 +1,24 @@
+1600 tone 440
+1600 src line
+1600 switch 0
+1700 rec 1
+3700 rec 0
+3800 tone 0
+3800 switch 1
+4000 on 18
+4800 off 18
+5000 on 25
+5800 off 25
+6000 menukey 1
+6050 on 31
+6060 off 31
+6100 menukey 0
+6200 on 16
+6210 off 16
+6300 menukey 1
+6310 wait 300
+6320 menukey 0
+7600 slot 6
+7700 on 18
+8500 off 18
+9500 end

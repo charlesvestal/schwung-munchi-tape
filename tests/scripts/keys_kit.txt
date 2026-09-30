@@ -1,0 +1,24 @@
+# default buffer (slot 15), C4 then G4
+1600 on 18
+2600 off 18
+3000 on 25
+4000 off 25
+# keys mode slot 1 bank a
+4500 slot 1
+4600 on 18
+6600 off 18
+6700 on 28
+8000 off 28
+8100 on 15
+9500 off 15
+# kit mode
+9600 mode kit
+9700 on 15
+10200 on 8
+10700 on 9
+11200 on 10
+12500 off 15
+12500 off 8
+12500 off 9
+12500 off 10
+14000 end
