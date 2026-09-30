@@ -140,6 +140,7 @@ class MunchiEngine
     int  CardLoaded() const { return loaded_count_.load(); }
     int  CardTotal() const { return total_count_.load(); }
     bool CardReady() const { return card_ready_.load(); }
+    bool CardSeeding() const { return seeding_.load(); }
 
     /* ---- audio (SPI thread) --------------------------------------------- */
     /** One Move block: `in` and `out` are int16 stereo interleaved, 44.1 kHz. */
@@ -332,6 +333,10 @@ class MunchiEngine
     std::string       card_dir_, factory_dir_;
     std::atomic<int>  loaded_count_{0}, total_count_{0};
     std::atomic<bool> card_ready_{false};
+    std::atomic<bool> seeding_{false};
+    std::atomic<bool> presets_known_{false};
+    std::atomic<Presets *> loaded_presets_{nullptr};
+    std::atomic<Presets *> adopted_presets_{nullptr};
     std::atomic<int>  want_mode_{0}, want_bank_{0}, want_slot_{15};
     std::vector<Sample *> retired_;
 };

@@ -1024,7 +1024,9 @@ void Surface::DrawMain()
 
     const uint32_t now = eng_.NowMs();
     int            y   = 24;
-    if(!eng_.CardReady())
+    if(eng_.CardSeeding())
+        disp_.Text(0, 54, "FIRST RUN: COPYING CARD");
+    else if(!eng_.CardReady())
     {
         snprintf(buf, sizeof(buf), "LOADING %d/%d", eng_.CardLoaded(), eng_.CardTotal());
         disp_.Text(0, 54, buf);

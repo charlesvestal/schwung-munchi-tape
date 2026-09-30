@@ -300,6 +300,9 @@ int MunchiEngine::Init()
 
     daisy::System::now_ms = 0;
     presets_.Init(preset_defaults);
+    // Nothing to save until the card's own presets.json has been read: a
+    // write before then would replace the user's file with the defaults.
+    presets_.updated = false;
 
     // ui.h Init -> NormalPage::Init
     for(int knob = 0; knob < 6; knob++)
@@ -453,6 +456,13 @@ void MunchiEngine::UiTick()
     if(menu_active_ && MenuIsClosable())
         menu_active_ = false;
 
+    // presets.json arrived from the worker
+    if(Presets *p = loaded_presets_.exchange(nullptr, std::memory_order_acq_rel))
+    {
+        presets_ = *p;
+        adopted_presets_ = p; // freed by the worker, never here
+    }
+
     // FileCopier finished
     if(copy_done_.load(std::memory_order_acquire))
     {
@@ -465,7 +475,9 @@ void MunchiEngine::UiTick()
     {
         presets_check_t_ = now;
         if(presets_.updated && !engine_.AnyVoicesPlaying()
-           && !presets_ready_.load() && worker_run_.load())
+           && !presets_ready_.load() && worker_run_.load()
+           && presets_known_.load(std::memory_order_acquire)
+           && !loaded_presets_.load())
         {
             presets_snapshot_ = presets_.Serialize();
             presets_.updated  = false;
@@ -1730,25 +1742,9 @@ void MunchiEngine::StartCardWorker(const std::string &card_dir,
     card_dir_    = card_dir;
     factory_dir_ = factory_dir;
 
-    // Settings and presets are read before the audio starts, as the
-    // firmware read them at boot. The samples load on the worker.
-    mkdirs(card_dir_);
-    WorkerSeed();
-
-    std::string pj = card_dir_ + "/presets.json";
-    if(FILE *f = fopen(pj.c_str(), "rb"))
-    {
-        std::string s;
-        char        buf[4096];
-        size_t      n;
-        while((n = fread(buf, 1, sizeof(buf), f)) > 0)
-            s.append(buf, n);
-        fclose(f);
-        presets_.Parse(s.c_str());
-        presets_.updated = false;
-    }
-
-    WorkerScan();
+    // Everything that touches the card happens on the worker -- including
+    // the first-launch copy of the factory card, which is ~100 MB and would
+    // otherwise hold the device dark before the SPI loop starts.
     worker_run_.store(true);
     worker_ = std::thread([this] { WorkerMain(); });
 }
@@ -1758,7 +1754,7 @@ void MunchiEngine::StopCardWorker()
     if(!worker_run_.load())
         return;
     // flush unsaved presets before the worker goes
-    if(presets_.updated)
+    if(presets_.updated && presets_known_.load() && !loaded_presets_.load())
     {
         presets_snapshot_ = presets_.Serialize();
         presets_.updated  = false;
@@ -2031,6 +2027,35 @@ void MunchiEngine::WorkerMain()
     sched_setaffinity(0, sizeof(set), &set);
 #endif
 
+    mkdirs(card_dir_);
+    seeding_.store(true);
+    WorkerSeed();
+    seeding_.store(false);
+
+    // presets.json, handed to the audio thread whole (it owns presets_)
+    std::string pj = card_dir_ + "/presets.json";
+    if(FILE *f = fopen(pj.c_str(), "rb"))
+    {
+        std::string s;
+        char        buf[4096];
+        size_t      n;
+        while((n = fread(buf, 1, sizeof(buf), f)) > 0)
+            s.append(buf, n);
+        fclose(f);
+        Presets *p = new Presets();
+        p->Init(preset_defaults);
+        if(p->Parse(s.c_str()))
+        {
+            p->updated = false;
+            loaded_presets_.store(p, std::memory_order_release);
+        }
+        else
+            delete p;
+    }
+    presets_known_.store(true, std::memory_order_release);
+
+    WorkerScan();
+
     auto     last_scan = std::chrono::steady_clock::now();
     while(worker_run_.load())
     {
@@ -2069,6 +2094,8 @@ void MunchiEngine::WorkerMain()
             card_ready_.store(true);
 
         WorkerFreeRetired(false);
+        if(Presets *p = adopted_presets_.exchange(nullptr))
+            delete p;
 
         // Pick up files dropped on the card from the web manager.
         auto now = std::chrono::steady_clock::now();
