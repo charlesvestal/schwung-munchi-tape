@@ -374,7 +374,9 @@ void MunchiEngine::ProcessHostBlock(const int16_t *in, int16_t *out, int frames)
             // CHOMPI inputs: 0 = mic, 1 = unused, 2/3 = aux L/R. Move has one
             // stereo input that is the mic until a cable is in; both feeds
             // carry it and the engine's input source picks which it reads.
-            in48_[0][in48_count_] = (l + r) * .5f;
+            // Move's internal mic arrives on the left channel only; a sum
+            // keeps it whole (and centred) whichever side carries it.
+            in48_[0][in48_count_] = l + r;
             in48_[1][in48_count_] = 0.f;
             in48_[2][in48_count_] = l;
             in48_[3][in48_count_] = r;

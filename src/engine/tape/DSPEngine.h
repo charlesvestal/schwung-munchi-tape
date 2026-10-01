@@ -460,7 +460,10 @@ namespace daisy
             float monitor[2][size];
             std::fill(&monitor[0][0], &monitor[1][size], 0.f);
 
-            if(monitor_mode == MonitorMode::BOTH)
+            // Munchi: the firmware monitored the mic/line here unconditionally.
+            // Through Move's speakers that is a feedback loop the moment the
+            // tool opens, so every monitor path waits for the record switch.
+            if(monitor_mode == MonitorMode::BOTH && input_monitor)
             {
                 if(in_source == InputSource::MIC)
                     ApplyMicMonitor(in, out, size, &monitor[0][0]);
@@ -505,7 +508,7 @@ namespace daisy
                 if (in_source == InputSource::LINE_IN)
                     ApplyLineMonitor(in, out, size, &monitor[0][0]);
             }
-            else if (monitor_mode == MonitorMode::SEND_RET)
+            else if (monitor_mode == MonitorMode::SEND_RET && input_monitor)
             {
                 ApplyLineMonitor(in, out, size, &monitor[0][0]);
             }

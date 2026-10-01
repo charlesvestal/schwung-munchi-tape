@@ -174,6 +174,8 @@ void Surface::HandleInternal(uint8_t status, uint8_t d1, uint8_t d2)
     if(d1 == CC_LINE_IN)
     {
         eng_.SetLineIn(d2 != 0);
+        jack_cc_value_ = d2;
+        jack_cc_seen_++;
         return;
     }
     OnButton(d1, d2 >= 64);

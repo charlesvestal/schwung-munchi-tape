@@ -43,6 +43,10 @@ class Surface
 
     bool WantsExit() const { return exit_; }
 
+    /* diagnostics: what Move's jack-detect CC said, for the log */
+    int jack_cc_value_ = -1;
+    int jack_cc_seen_  = 0;
+
     /** Turn everything off, 20 packets at a time: used on the way out.
      *  Returns the index to continue from, or -1 when done. */
     int WriteAllOff(uint8_t *spi, int start);

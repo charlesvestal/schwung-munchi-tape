@@ -119,6 +119,7 @@ int main(void)
     }
 
     Surface surface(engine);
+    int     jack_logged = 0;
 
     while(g_running && !surface.WantsExit())
     {
@@ -147,6 +148,14 @@ int main(void)
                                 SCHWUNG_AUDIO_FRAMES);
 
         surface.Tick(spi);
+
+        if(surface.jack_cc_seen_ != jack_logged)
+        {
+            jack_logged = surface.jack_cc_seen_;
+            char m[64];
+            snprintf(m, sizeof(m), "jack detect CC114 = %d", surface.jack_cc_value_);
+            log_line(m); // rare: only on a jack change
+        }
 
         if(ioctl(fd, xfer, SCHWUNG_FRAME_SIZE) < 0 && g_running)
         {
