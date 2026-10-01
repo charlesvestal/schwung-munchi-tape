@@ -178,6 +178,8 @@ class MunchiEngine
     /** Settings: read at start, written by the worker when changed. */
     void LoadOptions(const std::string &path);
     void SaveOptions();
+    /** Headphones in (Move CC 115): the only time the mic may be heard. */
+    void SetHeadphones(bool hp) { engine_.SetHeadphones(hp); }
     /** Jack detect (Move CC 114): line in vs internal mic. */
     void SetLineIn(bool plugged);
     /** External MIDI (ui.h ProcessMidi). */

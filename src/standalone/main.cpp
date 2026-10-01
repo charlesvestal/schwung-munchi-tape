@@ -94,6 +94,17 @@ int main(void)
         return 1;
     }
     engine.OptionsChanged();
+
+    // Headphones or speakers: Move only reports the jack when it changes, and
+    // Schwung saves the last report here (shim_worker.c, JACK_STATE_PATH).
+    // Unknown counts as speakers -- the side that cannot feed back.
+    if(FILE *jf = fopen("/data/UserData/schwung/jack_state", "r"))
+    {
+        int v = -1;
+        if(fscanf(jf, "%d", &v) == 1)
+            engine.SetHeadphones(v == 127);
+        fclose(jf);
+    }
     engine.StartCardWorker(card, mod + "/card");
     log_line(("card " + card).c_str());
 

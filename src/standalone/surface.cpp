@@ -34,6 +34,7 @@ enum
     CC_REC       = 86,
     CC_MUTE      = 88,
     CC_LINE_IN   = 114, // XMOS jack detect: 0 = internal mic, 127 = cable
+    CC_LINE_OUT  = 115, // XMOS jack detect: 0 = speakers, 127 = headphones
     CC_SAMPLE    = 118,
     CC_DELETE    = 119,
 };
@@ -59,6 +60,8 @@ enum
     C_AZURE     = 16,
     C_MAGENTA   = 26,
 };
+
+static const int kNumSettings = 10; // rows on the settings screen
 
 // CHOMPI's five bank colours: purple, orange, teal, dark orange, yellow-green
 static const uint8_t kBank[5]    = {23, 3, 15, 28, 9};
@@ -155,8 +158,8 @@ void Surface::HandleInternal(uint8_t status, uint8_t d1, uint8_t d2)
             settings_cursor_ += delta > 0 ? 1 : -1;
             if(settings_cursor_ < 0)
                 settings_cursor_ = 0;
-            if(settings_cursor_ > 8)
-                settings_cursor_ = 8;
+            if(settings_cursor_ > kNumSettings - 1)
+                settings_cursor_ = kNumSettings - 1;
         }
         else if(eng_.Eng().GetVoiceMode() == VoiceMode::JAMMI)
         {
@@ -169,6 +172,11 @@ void Surface::HandleInternal(uint8_t status, uint8_t d1, uint8_t d2)
                 snprintf(v, sizeof(v), "%c%d", 'A' + eng_.Eng().GetBank(), s);
             Show("SLOT", v);
         }
+        return;
+    }
+    if(d1 == CC_LINE_OUT)
+    {
+        eng_.SetHeadphones(d2 != 0);
         return;
     }
     if(d1 == CC_LINE_IN)
@@ -389,8 +397,9 @@ void Surface::OnButton(int cc, bool press)
                 e.SetSwitch(!e.GetSwitch());
                 if(e.GetSwitch())
                     Show("MONITOR", "OFF");
-                else if(e.Eng().GetInputSource() == InputSource::MIC)
-                    Show("MONITOR", "MIC: SILENT");
+                else if(e.Eng().GetInputSource() == InputSource::MIC
+                        && !e.Eng().GetHeadphones())
+                    Show("MONITOR", "MIC: HEADPHONES");
                 else
                     Show("MONITOR", "ON");
             }
@@ -445,25 +454,35 @@ int Surface::NextSlot(int from, int dir)
 
 /* ---- settings ----------------------------------------------------------- */
 
-static const char *kSettingNames[9] = {
-    "RECORD LATCH", "TAPE SLEW",  "MONITOR",     "SPLIT DELAY", "SHIFT SNAP",
-    "PAD VELOCITY", "MIDI IN CH", "MIDI OUT CH", "EXIT",
+static const char *kSettingNames[10] = {
+    "INPUT",       "RECORD LATCH", "TAPE SLEW",  "MONITOR",     "SPLIT DELAY",
+    "SHIFT SNAP",  "PAD VELOCITY", "MIDI IN CH", "MIDI OUT CH", "EXIT",
 };
+
 
 void Surface::SettingsActivate(int dir)
 {
     Options &o = eng_.MutableOpts();
     switch(settings_cursor_)
     {
-        case 0: o.record_latch = !o.record_latch; break;
-        case 1: o.tape_slew = !o.tape_slew; break;
-        case 2: o.monitor_pos = (o.monitor_pos + 3 + dir) % 3; break;
-        case 3: o.split_delay = !o.split_delay; break;
-        case 4: o.ps_quant = !o.ps_quant; break;
-        case 5: eng_.key_velocity = eng_.key_velocity < 0.f ? 127.f : -1.f; break;
-        case 6: o.midi_ch_in = (o.midi_ch_in + 16 + dir) % 16; break;
-        case 7: o.midi_ch_out = (o.midi_ch_out + 16 + dir) % 16; break;
-        case 8: exit_ = true; return;
+        case 0:
+        {
+            // the same as Shift + F#3 / G#3 / A#3
+            static const int keys[3] = {KEY_18, KEY_19, KEY_20};
+            int cur = (int)eng_.Eng().GetInputSource() % 3;
+            int key = keys[(cur + 3 + dir) % 3];
+            eng_.Eng().SetInputSource(InputSource(key == KEY_18 ? 0 : key == KEY_19 ? 1 : 2));
+            return; // not saved: the CHOMPI didn't either
+        }
+        case 1: o.record_latch = !o.record_latch; break;
+        case 2: o.tape_slew = !o.tape_slew; break;
+        case 3: o.monitor_pos = (o.monitor_pos + 3 + dir) % 3; break;
+        case 4: o.split_delay = !o.split_delay; break;
+        case 5: o.ps_quant = !o.ps_quant; break;
+        case 6: eng_.key_velocity = eng_.key_velocity < 0.f ? 127.f : -1.f; break;
+        case 7: o.midi_ch_in = (o.midi_ch_in + 16 + dir) % 16; break;
+        case 8: o.midi_ch_out = (o.midi_ch_out + 16 + dir) % 16; break;
+        case 9: exit_ = true; return;
     }
     eng_.OptionsChanged();
 }
@@ -933,23 +952,25 @@ void Surface::DrawSettings()
     disp_.HLine(0, 9, 128);
     const Options &o = eng_.Opts();
     static const char *mons[3] = {"DRY", "THRU FX", "SEND/RET"};
+    static const char *srcs[3] = {"MIC", "LINE", "RESAMPLE"};
     int first = settings_cursor_ - 4 < 0 ? 0 : settings_cursor_ - 4;
     for(int row = 0; row < 5; row++)
     {
         int i = first + row;
-        if(i > 8)
+        if(i > kNumSettings - 1)
             break;
         char v[16] = "";
         switch(i)
         {
-            case 0: strcpy(v, o.record_latch ? "ON" : "OFF"); break;
-            case 1: strcpy(v, o.tape_slew ? "ON" : "OFF"); break;
-            case 2: strcpy(v, mons[o.monitor_pos % 3]); break;
-            case 3: strcpy(v, o.split_delay ? "ON" : "OFF"); break;
-            case 4: strcpy(v, o.ps_quant ? "ON" : "OFF"); break;
-            case 5: strcpy(v, eng_.key_velocity < 0.f ? "ON" : "OFF"); break;
-            case 6: snprintf(v, sizeof(v), "%d", o.midi_ch_in + 1); break;
-            case 7: snprintf(v, sizeof(v), "%d", o.midi_ch_out + 1); break;
+            case 0: strcpy(v, srcs[(int)eng_.Eng().GetInputSource() % 3]); break;
+            case 1: strcpy(v, o.record_latch ? "ON" : "OFF"); break;
+            case 2: strcpy(v, o.tape_slew ? "ON" : "OFF"); break;
+            case 3: strcpy(v, mons[o.monitor_pos % 3]); break;
+            case 4: strcpy(v, o.split_delay ? "ON" : "OFF"); break;
+            case 5: strcpy(v, o.ps_quant ? "ON" : "OFF"); break;
+            case 6: strcpy(v, eng_.key_velocity < 0.f ? "ON" : "OFF"); break;
+            case 7: snprintf(v, sizeof(v), "%d", o.midi_ch_in + 1); break;
+            case 8: snprintf(v, sizeof(v), "%d", o.midi_ch_out + 1); break;
         }
         int y = 12 + row * 10;
         disp_.Text(2, y, kSettingNames[i]);

@@ -1,0 +1,6 @@
+1600 tone 440
+1600 src mic
+1600 switch 0
+3000 hp 1
+4500 switch 1
+5500 end

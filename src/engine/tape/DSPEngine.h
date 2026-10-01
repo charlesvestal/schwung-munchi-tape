@@ -470,7 +470,11 @@ namespace daisy
              * `sink`, which is `out` only when the input may be heard. */
             float scratch[2][size];
             std::fill(&scratch[0][0], &scratch[1][size], 0.f);
-            const bool audible = input_monitor && in_source == InputSource::LINE_IN;
+            // The mic may be heard only on headphones (Move CC 115, tracked by
+            // the surface); a line input whenever monitoring is on.
+            const bool audible = input_monitor
+                                 && (in_source == InputSource::LINE_IN
+                                     || (in_source == InputSource::MIC && headphones_));
             float *sink[2] = {audible ? out[0] : scratch[0], audible ? out[1] : scratch[1]};
 
             if(monitor_mode == MonitorMode::BOTH)
@@ -1519,6 +1523,8 @@ namespace daisy
         inline size_t GetChompiLength() { return chompi_mem_ ? chompi_mem_->length : 0; }
         inline float GetDelayFeedbackTarget() { return dly_feedback_target_; }
         inline void ClearLooper() { looper.Reset(); }
+        inline void SetHeadphones(bool hp) { headphones_ = hp; }
+        inline bool GetHeadphones() { return headphones_; }
         inline void SetRecordLatch(bool latch) { record_latch = latch; }
         inline void SetMonitorMode(MonitorMode m) { monitor_mode = m; }
         inline void SetTapeSlew(bool slew) { looper.SetTapeSlew(slew); }
@@ -1550,6 +1556,7 @@ namespace daisy
 
         /** Sampling Bits */
         munchi::SampleStore* store_ = nullptr;
+        bool headphones_ = false;
         RamBufferMemory* chompi_mem_ = nullptr;
         daisy::FileSampleReader chompi_voice[kMaxPoly];
         RamBuffer chompi_writer;

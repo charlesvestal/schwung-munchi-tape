@@ -162,7 +162,7 @@ and pan).
 | **4 Space** | Delay and reverb together | Delay time (also sets the reverb size) |
 | **5 Lofi** | Saturation | Warble (tape wow and flutter) |
 | **6 Filter** | Middle is open; left is low-pass, right is high-pass | Resonance |
-| **8 Input** | Input gain for recording | Output compressor |
+| **8 Input** | Input gain: the recording level (and a monitored input's level) | Output compressor |
 | **Volume knob** | Volume | Output compressor |
 
 **Delete + touch knob 4, 5 or 6** resets all the effects.
@@ -192,18 +192,21 @@ The buffer is one sample that you record yourself, up to about 165 seconds.
 
 A new recording resets the buffer's speed, start, end, gain and envelope.
 
-**Monitoring — Track 4.** Lit red, you hear a **line** input as you record. The
-**microphone is never monitored**: Move's mic sits beside its speakers, so
-hearing it would feed back. It still records normally — you just hear it
-afterwards.
+**Monitoring — Track 4.** Lit red, you hear the input as you record. A **line**
+input is heard on headphones or speakers. The **microphone is only heard on
+headphones**: Move's mic sits beside its speakers, so hearing it there would feed
+back. On the speakers it still records normally — you just hear it afterwards.
 
-**Track 3** chooses where a monitored line input goes: *Dry* (straight to the
+**Track 3** chooses where a monitored input goes: *Dry* (straight to the
 output), *Thru FX* (through the effects and into the looper, the default) or
 *Send/Ret* (back in after the effects).
 
-Move has one input. With nothing plugged into the line jack it's the internal
-microphone; with a cable, it's the line. Choose the matching source yourself
-(Shift + F#3 or G#3) — Munchi Tape doesn't switch automatically.
+**Choosing the input.** Hold **Shift** and tap **F#3** (Mic), **G#3** (Line) or
+**A#3** (Resample) — or pick it as the first row of [Settings](#13-settings). The
+screen's top right shows which. Move has one physical input: the internal
+microphone until a cable is plugged into the line-in jack, then the line. The
+choice tells Munchi Tape how to treat it (the CHOMPI's mic filter and 5x gain, or
+line gain, and whether it may be heard on speakers); it doesn't switch by itself.
 
 ## 9. The looper
 
@@ -330,9 +333,10 @@ saved to the card's `options.json`.
 
 | Setting | Does |
 |---|---|
+| **Input** | Mic, Line or Resample (as Shift + F#3 / G#3 / A#3) |
 | **Record Latch** | Sample is tap-on / tap-off instead of hold-to-record |
 | **Tape Slew** | Looper speed changes glide |
-| **Monitor** | Where a monitored line input goes (as Track 3) |
+| **Monitor** | Where a monitored input goes (as Track 3) |
 | **Split Delay** | Knob 4: delay to the left, reverb to the right |
 | **Shift Snap** | Shift + knobs 1 and 7 step in fifths and octaves (off: fine control) |
 | **Pad Velocity** | Pads play at their velocity |
@@ -412,8 +416,8 @@ E lime.
   mode), and Track 4 is only the monitor switch.
 - **Output.** Move has one stereo output, so you hear the CHOMPI's headphone mix
   at line level.
-- **Input.** The microphone is never monitored, and the input source never
-  switches by itself.
+- **Input.** The microphone is only monitored on headphones, and the input
+  source never switches by itself.
 - **Samples in memory.** The CHOMPI streamed samples from its card; Munchi Tape
   holds them in memory, so every voice uses the firmware's buffer playback. A
   looping sample's crossfade at the loop point is always about 3 ms, and speed

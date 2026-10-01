@@ -2199,6 +2199,8 @@ void MunchiEngine::ScriptCommand(const char *op, const char *a, float b)
     }
     else if(!strcmp(op, "switch"))
         SetSwitch(atoi(a) != 0);
+    else if(!strcmp(op, "hp"))
+        SetHeadphones(atoi(a) != 0);
     else if(!strcmp(op, "rec"))
         RecordKey(atoi(a) != 0);
     else if(!strcmp(op, "menukey"))

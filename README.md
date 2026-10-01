@@ -42,8 +42,9 @@ card works.
 | Menu | settings |
 | Back ×2 | exit |
 
-The microphone is never monitored (it would feed back through the speakers),
-but it records normally. Everything else is in the [manual](docs/MANUAL.md).
+The microphone is only monitored on headphones (on the speakers it would feed
+back), but it always records. Choose Mic / Line / Resample with Shift + F#3 / G#3 /
+A#3 or in Settings. Everything else is in the [manual](docs/MANUAL.md).
 
 ## Install
 
