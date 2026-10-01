@@ -460,19 +460,29 @@ namespace daisy
             float monitor[2][size];
             std::fill(&monitor[0][0], &monitor[1][size], 0.f);
 
-            // Munchi: the firmware monitored the mic/line here unconditionally.
-            // Through Move's speakers that is a feedback loop the moment the
-            // tool opens, so every monitor path waits for the record switch.
-            if(monitor_mode == MonitorMode::BOTH && input_monitor)
+            /* Munchi: the input is ALWAYS measured into monitor[] -- the
+             * buffer records from it and the input VU reads it -- but it is
+             * only HEARD when the record switch is on and the source is not
+             * the mic. On a CHOMPI the mic was monitored by default, into
+             * headphones; on Move it is a mic beside two speakers, and every
+             * path that let it through was a feedback loop. Where the
+             * firmware wrote the monitor into `out`, it now writes into
+             * `sink`, which is `out` only when the input may be heard. */
+            float scratch[2][size];
+            std::fill(&scratch[0][0], &scratch[1][size], 0.f);
+            const bool audible = input_monitor && in_source == InputSource::LINE_IN;
+            float *sink[2] = {audible ? out[0] : scratch[0], audible ? out[1] : scratch[1]};
+
+            if(monitor_mode == MonitorMode::BOTH)
             {
                 if(in_source == InputSource::MIC)
-                    ApplyMicMonitor(in, out, size, &monitor[0][0]);
+                    ApplyMicMonitor(in, sink, size, &monitor[0][0]);
                 else if(in_source == InputSource::LINE_IN)
-                    ApplyLineMonitor(in, out, size, &monitor[0][0]);
+                    ApplyLineMonitor(in, sink, size, &monitor[0][0]);
             }
-            else if (monitor_mode == MonitorMode::SEND_RET && input_monitor && in_source == InputSource::MIC)
+            else if (monitor_mode == MonitorMode::SEND_RET && in_source == InputSource::MIC)
             {
-                ApplyMicMonitor(in, out, size, &monitor[0][0]);
+                ApplyMicMonitor(in, sink, size, &monitor[0][0]);
             }
 
 
@@ -501,16 +511,16 @@ namespace daisy
             std::copy(out[1], out[1] + size, out[3]);
 
             // add the dry monitor to the HPs only
-            if (monitor_mode == MonitorMode::HP && input_monitor)
+            if (monitor_mode == MonitorMode::HP)
             {
                 if (in_source == InputSource::MIC)
-                    ApplyMicMonitor(in, out, size, &monitor[0][0]);
+                    ApplyMicMonitor(in, sink, size, &monitor[0][0]);
                 if (in_source == InputSource::LINE_IN)
-                    ApplyLineMonitor(in, out, size, &monitor[0][0]);
+                    ApplyLineMonitor(in, sink, size, &monitor[0][0]);
             }
-            else if (monitor_mode == MonitorMode::SEND_RET && input_monitor)
+            else if (monitor_mode == MonitorMode::SEND_RET && in_source == InputSource::LINE_IN)
             {
-                ApplyLineMonitor(in, out, size, &monitor[0][0]);
+                ApplyLineMonitor(in, sink, size, &monitor[0][0]);
             }
 
             // apply resample gain as appropriate (and envelope in/out of that situation)

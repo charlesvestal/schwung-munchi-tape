@@ -1,0 +1,14 @@
+1000 tone 440
+1000 src mic
+1200 rec 1
+2200 rec 0
+2300 switch 0
+2400 rec 1
+3400 rec 0
+3500 src line
+3600 tone 330
+5000 switch 1
+5500 tone 0
+5600 on 18
+6600 off 18
+7000 end

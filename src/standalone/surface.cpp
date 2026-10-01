@@ -173,7 +173,9 @@ void Surface::HandleInternal(uint8_t status, uint8_t d1, uint8_t d2)
     }
     if(d1 == CC_LINE_IN)
     {
-        eng_.SetLineIn(d2 != 0);
+        // Logged, not obeyed: on hardware it said "cable" with none plugged
+        // in, which put the mic on the line path. Mic/Line is the user's
+        // choice (Shift + F#3 / G#3) until its meaning is measured.
         jack_cc_value_ = d2;
         jack_cc_seen_++;
         return;
@@ -385,7 +387,12 @@ void Surface::OnButton(int cc, bool press)
             if(press)
             {
                 e.SetSwitch(!e.GetSwitch());
-                Show("MODE", e.GetSwitch() ? "PLAY" : "RECORD");
+                if(e.GetSwitch())
+                    Show("MONITOR", "OFF");
+                else if(e.Eng().GetInputSource() == InputSource::MIC)
+                    Show("MONITOR", "MIC: SILENT");
+                else
+                    Show("MONITOR", "ON");
             }
             break;
 
@@ -1003,11 +1010,16 @@ void Surface::DrawMain()
     bool keys = x.GetVoiceMode() == VoiceMode::JAMMI;
     if(keys)
     {
+        int n;
         if(x.GetVoiceSlot() == 15)
-            snprintf(buf, sizeof(buf), "KEYS BUF");
+            n = snprintf(buf, sizeof(buf), "KEYS BUF");
         else
-            snprintf(buf, sizeof(buf), "KEYS %c%d", 'A' + (int)x.GetVoiceBank(),
-                     (int)x.GetVoiceSlot());
+            n = snprintf(buf, sizeof(buf), "KEYS %c%d", 'A' + (int)x.GetVoiceBank(),
+                         (int)x.GetVoiceSlot());
+        // Keys mode can browse a bank without leaving the playing slot
+        // (the firmware's behaviour); say which bank the pads/steps show.
+        if((size_t)x.GetBank() != x.GetVoiceBank() || x.GetVoiceSlot() == 15)
+            snprintf(buf + n, sizeof(buf) - n, " [%c]", 'A' + x.GetBank());
     }
     else
         snprintf(buf, sizeof(buf), "KIT %c", 'A' + x.GetBank());
