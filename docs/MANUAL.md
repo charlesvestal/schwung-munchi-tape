@@ -48,6 +48,10 @@ place, which takes a few seconds (the screen says *FIRST RUN: COPYING CARD*);
 after that it starts at once. For the first second and a half the pads are
 ignored, as on the hardware.
 
+**Booting straight into it.** Munchi Tape is also a boot target: choose it in the
+Schwung web manager's **Boot** page (`http://move.local:7700/boot`) and Move
+starts in Munchi Tape. Leaving it then starts Schwung as usual.
+
 To leave, press **Back**, then **Back** again within three seconds. Move
 restarts.
 
@@ -66,14 +70,15 @@ restarts.
    are all tuned to C, so they change character, not key.)
 3. **Bend it.** Turn **knob 1 (Speed)** left — past the middle, the sample plays
    backwards. Turn **knobs 2 and 3 (Start, End)** to play only a slice of it.
-4. **Add space.** Turn **knob 4** up for delay and reverb, **knob 5** for
-   saturation, **knob 6** to filter (left: low-pass, right: high-pass).
+4. **Add space.** Turn **knob 6** up for delay and reverb, **knob 7** to filter
+   (left: low-pass, right: high-pass). Press **Right** for the second page of
+   knobs: lofi, warble, delay time, resonance and more.
 5. **Try a kit.** Hold **Shift** and press the **second black pad** of the bottom
    octave (D#3). Every white pad is now its own sound. Shift + D#3 again gives
    the next kit. Shift + C#3 goes back to Keys.
 6. **Loop it.** Press **Loop**, play something, press **Loop** again — the loop
    starts repeating and you are adding to it. Press **Play** to stop adding.
-   Turn **knob 7** to change its speed.
+   Turn **knob 8** to change its speed.
 7. **Sample yourself.** Hold **Sample**, make a noise into Move's microphone,
    let go. Press **step 15** (or jog to *BUF*) and play the pads: your noise is
    the instrument.
@@ -127,23 +132,28 @@ These settings belong to **the slot** — each sample remembers its own speed,
 start, end, envelope, gain, pan, looping and sustain, and gets them back when you
 select it again.
 
-| Knob | Does |
+Every sound control has a knob, on two pages of eight. **Left** and **Right**
+switch pages; the lit arrow is the way to the other one.
+
+| Page 1 | Does |
 |---|---|
-| **1 Speed** | Playback speed and pitch: 2x reverse at the far left, stopped in the middle, 2x forward at the far right (it starts at 1x forward). With **Shift**: steps in fifths and octaves |
+| **1 Speed** | Playback speed and pitch: 2x reverse at the far left, stopped in the middle, 2x forward at the far right (it starts at 1x forward) |
 | **2 Start** | Where the sample starts |
 | **3 End** | Where it ends. Start and end can't get closer than about 85 ms |
-| **Right**, then **1 Gain** | Level of this sample (0 to 2x) |
-| **Right**, then **2 Attack** | Fade-in, up to 20 s |
-| **Right**, then **3 Decay** | Release time, up to 4 s |
+| **4 Attack** | Fade-in, up to 20 s |
+| **5 Decay** | Release time, up to 4 s |
 
-**Left / Right** switch knobs 1–3 between these two pages; the arrow that is lit
-is the way to the other page.
+| Page 2 | Does |
+|---|---|
+| **1 Gain** | Level of this sample (0 to 2x) |
+| **2 Pan** | Left / right |
 
-With **Shift** held:
+With **Shift** held, a few knobs do the CHOMPI's extra gestures:
 
-- **Shift + knob 2 or 3** slides the start/end window together, keeping its
-  length (on the Gain page: sets attack and decay together).
-- **Shift + knob 1** on the Gain page sets **pan**.
+- **Shift + Speed** steps in fifths and octaves.
+- **Shift + Start or End** slides the start/end window together, keeping its
+  length.
+- **Shift + Attack or Decay** sets both together.
 
 Two switches, on the track buttons:
 
@@ -152,22 +162,26 @@ Two switches, on the track buttons:
 - **Track 2 — Sustain.** On: the sound holds while the pad is held. Off: it
   plays its attack then fades over the decay time, held or not.
 
-**Delete + touch knob 1** resets speed to 1x forwards (on the Gain page: gain
-and pan).
+**Delete + touch** Speed resets it to 1x forwards; Delete + touch Gain or Pan
+resets both.
 
 ## 7. Effects
 
-| Knob | Does | With Shift |
-|---|---|---|
-| **4 Space** | Delay and reverb together | Delay time (also sets the reverb size) |
-| **5 Lofi** | Saturation | Warble (tape wow and flutter) |
-| **6 Filter** | Middle is open; left is low-pass, right is high-pass | Resonance |
-| **8 Input** | Input gain: the recording level (and a monitored input's level) | Output compressor |
-| **Volume knob** | Volume | Output compressor |
+| Knob | Does |
+|---|---|
+| **Page 1, knob 6: Space** | Delay and reverb together |
+| **Page 1, knob 7: Filter** | Middle is open; left is low-pass, right is high-pass |
+| **Page 2, knob 3: Lofi** | Saturation |
+| **Page 2, knob 4: Warble** | Tape wow and flutter |
+| **Page 2, knob 5: Delay time** | Also sets the reverb size |
+| **Page 2, knob 6: Resonance** | The filter's resonance |
+| **Page 2, knob 7: Input** | Input gain: the recording level (and a monitored input's level) |
+| **Page 2, knob 8: Comp** | Output compressor |
+| **Volume knob** | Volume (with Shift: the compressor) |
 
-**Delete + touch knob 4, 5 or 6** resets all the effects.
+**Delete + touch** any of the effect knobs resets all the effects.
 
-**Split Delay** ([Settings](#13-settings)) changes knob 4: left of centre is
+**Split Delay** ([Settings](#13-settings)) changes Space: left of centre is
 delay only, right of centre is reverb only.
 
 **Effects before or after the looper.** By default (**Shift + C#4**) the effects
@@ -183,7 +197,7 @@ The buffer is one sample that you record yourself, up to about 165 seconds.
 1. Pick a source: **Shift + F#3** microphone, **Shift + G#3** line input,
    **Shift + A#3** resample (records Munchi Tape's own output — your playing,
    the loop and the effects).
-2. Set the level with **knob 8 (Input)**. The **Sample** button's light shows the
+2. Set the level with **Input** (page 2, knob 7). The **Sample** button's light shows the
    input level while monitoring is on (green, yellow, pink as it gets louder).
 3. **Hold Sample** to record; let go to stop. With **Record Latch** on, tap to
    start and tap to stop.
@@ -226,11 +240,11 @@ Its length is set by the first recording, up to about 165 seconds.
 
 **Rec** does the same as **Loop**.
 
-**Knob 7 (Loop speed)** while the loop plays: −2x to +2x, through stop and into
-reverse. Pitch and speed change together, like tape. **Shift + knob 7** steps in
-fifths and octaves. **Delete + touch knob 7** returns to 1x.
+**Loop speed** (page 1, knob 8) while the loop plays: −2x to +2x, through stop
+and into reverse. Pitch and speed change together, like tape. **Shift + Loop
+speed** steps in fifths and octaves. **Delete + touch** it returns to 1x.
 
-While the loop is **paused**, turning knob 7 **scrubs** — drag the tape back and
+While the loop is **paused**, turning Loop speed **scrubs** — drag the tape back and
 forth by hand.
 
 **Overdub level:** hold **Shift** and press **Loop** (more) or **Play** (less).
@@ -261,8 +275,9 @@ row 2   .  KEYS KIT   .   MIC   LINE RSMP  .
 | **A#4 — Save** (or Shift + Capture) | Save the buffer |
 
 In Keys mode, **white keys** select slots (the playing slot is lit white).
-**Loop** and **Play** set the overdub level. The knobs do their Shift jobs
-(sections [6](#6-shaping-a-sample), [7](#7-effects) and [9](#9-the-looper)).
+**Loop** and **Play** set the overdub level. Speed, Start, End, Attack, Decay
+and Loop speed do their Shift gestures ([section 6](#6-shaping-a-sample) and
+[section 9](#9-the-looper)).
 
 ## 11. Saving, copying and erasing
 
@@ -337,8 +352,8 @@ saved to the card's `options.json`.
 | **Record Latch** | Sample is tap-on / tap-off instead of hold-to-record |
 | **Tape Slew** | Looper speed changes glide |
 | **Monitor** | Where a monitored input goes (as Track 3) |
-| **Split Delay** | Knob 4: delay to the left, reverb to the right |
-| **Shift Snap** | Shift + knobs 1 and 7 step in fifths and octaves (off: fine control) |
+| **Split Delay** | Space: delay to the left, reverb to the right |
+| **Shift Snap** | Shift + Speed and Shift + Loop speed step in fifths and octaves (off: fine control) |
 | **Pad Velocity** | Pads play at their velocity |
 | **MIDI In Ch / MIDI Out Ch** | USB-A MIDI channels |
 | **Exit** | Leave Munchi Tape |
@@ -349,9 +364,10 @@ A controller on Move's **USB-A** port can play Munchi Tape, on **MIDI In Ch**:
 
 - **Notes 24–72** play the keyboard, with velocity. In Kit mode the white keys
   48–72 are the slots.
-- **CC 20–25** set the CHOMPI's six encoders: knobs 1–3 (on their current
-  page), the effects knob (whichever of Space / Lofi / Filter you turned last),
-  Loop speed (only while the loop plays) and Volume.
+- **CC 20–25** set the CHOMPI's six encoders: Speed (or Gain), Start (or
+  Attack), End (or Decay) — whichever of each pair you turned last — the effects
+  encoder (Space, Lofi or Filter, likewise), Loop speed (only while the loop
+  plays) and Volume.
 - **CC 26 / 27** are Play and Loop (above 84 pressed, below 42 released).
 
 Munchi Tape sends its key presses as notes and its knob moves as CCs on **MIDI
@@ -385,16 +401,10 @@ E lime.
 | Control | Alone | With Shift |
 |---|---|---|
 | Pads | play | menu functions / pick slots |
-| Knob 1 | Speed (Gain page: Gain) | Speed in steps (Gain page: Pan) |
-| Knob 2 | Start (Attack) | Slide window (Attack + Decay) |
-| Knob 3 | End (Decay) | Slide window (Attack + Decay) |
-| Knob 4 | Space | Delay time |
-| Knob 5 | Lofi | Warble |
-| Knob 6 | Filter | Resonance |
-| Knob 7 | Loop speed / scrub | Loop speed in steps |
-| Knob 8 | Input gain | Compressor |
+| Knobs, page 1 | Speed, Start, End, Attack, Decay, Space, Filter, Loop speed | Speed steps, Window, Window, Attack + Decay, Attack + Decay, —, —, Loop speed steps |
+| Knobs, page 2 | Gain, Pan, Lofi, Warble, Delay time, Resonance, Input, Comp | — |
 | Volume | Volume | Compressor |
-| Left / Right | knob 1–3 page | — |
+| Left / Right | knob page | — |
 | Up / Down | octave | — |
 | Jog | next/previous slot (Keys) | — |
 | Jog click / Menu | settings | — |
@@ -403,15 +413,17 @@ E lime.
 | Loop / Rec | looper record / overdub | overdub level up |
 | Play | looper play / pause | overdub level down |
 | Delete + Loop | clear looper | — |
-| Delete + touch knob 1 / 4–6 / 7 | reset speed / effects / loop speed | — |
+| Delete + touch a knob | reset it (Speed, Gain/Pan, the effects, Loop speed) | — |
 | Delete / Copy / Capture | — | erase / copy / save |
 | Track 1 / 2 / 3 / 4 | auto-loop / sustain / monitor path / monitor | — |
 | Back ×2 | exit | — |
 
 ## 17. Differences from a real CHOMPI
 
-- **Controls.** Move has more knobs and no encoder clicks, so pages are on
-  Left/Right and clicks are Delete + touch or the Track buttons. Shift is the
+- **Controls.** The CHOMPI has six encoders with pages and a Shift layer; Move
+  gives every control its own knob on two pages instead, keeping Shift for the
+  encoders' extra gestures. Encoder clicks are Delete + touch or the Track
+  buttons. Shift is the
   menu (the CHOMPI key in play mode), Sample records (the CHOMPI key in record
   mode), and Track 4 is only the monitor switch.
 - **Output.** Move has one stereo output, so you hear the CHOMPI's headphone mix

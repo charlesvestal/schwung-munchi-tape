@@ -236,66 +236,100 @@ void Surface::OnStep(int step, bool on)
     }
 }
 
-/* Knob n -> CHOMPI encoder and page. The magic encoder's three pages each
- * get a knob; encoders A-C follow the Left/Right page; the volume knob is
- * encoder F's first page and knob 8 its second. */
+/* ---- knobs ----------------------------------------------------------------
+ * Every sound control has a knob: two pages of eight (Left/Right), plus the
+ * volume knob. Each is a CHOMPI encoder on one of its pages, reached either
+ * the way the play page reached it or the way the menu page did. Shift keeps
+ * only the menu page's extra GESTURES (stepped speed, the sliding window,
+ * attack and decay together), on the knobs they belong to. */
+enum Param
+{
+    P_SPEED, P_START, P_END, P_ATTACK, P_DECAY, P_SPACE, P_FILTER, P_LOOP,
+    P_GAIN, P_PAN, P_LOFI, P_WARBLE, P_TIME, P_RES, P_INPUT, P_COMP,
+    P_VOLUME, P_SPEED_SNAP, P_WINDOW, P_ATKDEC, P_LOOP_SNAP, P_NONE,
+};
+
+struct ParamDef
+{
+    const char *name, *abbrev;
+    int         enc, page;
+    bool        menu;   // through MenuPage's encoder rules
+    int         shift;  // the knob's Shift gesture, or P_NONE
+    int         click;  // the encoder click Delete + touch sends, or -1
+};
+
+static const ParamDef kParams[] = {
+    {"SPEED", "SPD", 0, 0, false, P_SPEED_SNAP, ENC_4_SW},
+    {"START", "STA", 1, 0, false, P_WINDOW, -1},
+    {"END", "END", 2, 0, false, P_WINDOW, -1},
+    {"ATTACK", "ATK", 1, 1, false, P_ATKDEC, -1},
+    {"DECAY", "DEC", 2, 1, false, P_ATKDEC, -1},
+    {"SPACE", "SPC", 3, 0, false, P_NONE, ENC_3_SW},
+    {"FILTER", "FLT", 3, 2, false, P_NONE, ENC_3_SW},
+    {"LOOP SPEED", "LOP", 4, 0, false, P_LOOP_SNAP, ENC_5_SW},
+    {"GAIN", "GAN", 0, 1, false, P_NONE, ENC_4_SW},
+    {"PAN", "PAN", 0, 1, true, P_NONE, ENC_4_SW},
+    {"LOFI", "LOF", 3, 1, false, P_NONE, ENC_3_SW},
+    {"WARBLE", "WRB", 3, 1, true, P_NONE, ENC_3_SW},
+    {"DELAY TIME", "TIM", 3, 0, true, P_NONE, ENC_3_SW},
+    {"RESONANCE", "RES", 3, 2, true, P_NONE, ENC_3_SW},
+    {"INPUT", "IN", 5, 1, false, P_NONE, -1},
+    {"COMP", "CMP", 5, 0, true, P_NONE, -1},
+    {"VOLUME", "VOL", 5, 0, false, P_COMP, -1},
+    {"SPEED SNAP", "SPD", 0, 0, true, P_NONE, -1},
+    {"WINDOW", "WIN", 1, 0, true, P_NONE, -1},
+    {"ATTACK+DECAY", "A+D", 1, 1, true, P_NONE, -1},
+    {"LOOP SNAP", "LOP", 4, 0, true, P_NONE, -1},
+};
+
+static const int kPage[2][8] = {
+    {P_SPEED, P_START, P_END, P_ATTACK, P_DECAY, P_SPACE, P_FILTER, P_LOOP},
+    {P_GAIN, P_PAN, P_LOFI, P_WARBLE, P_TIME, P_RES, P_INPUT, P_COMP},
+};
+
+int Surface::KnobParam(int knob, bool shift) const
+{
+    int p = knob == 8 ? P_VOLUME : kPage[page_][knob];
+    if(shift && kParams[p].shift != P_NONE)
+        p = kParams[p].shift;
+    return p;
+}
+
 void Surface::OnKnob(int knob, int delta)
 {
-    if(delta == 0)
+    if(delta == 0 || knob < 0 || knob > 8)
         return;
-    bool menu = eng_.MenuActive();
-    int  enc = 0, page = 0;
-    switch(knob)
-    {
-        case 0: enc = 0; page = page_; break;
-        case 1: enc = 1; page = page_; break;
-        case 2: enc = 2; page = page_; break;
-        case 3: enc = 3; page = 0; break;
-        case 4: enc = 3; page = 1; break;
-        case 5: enc = 3; page = 2; break;
-        case 6: enc = 4; page = 0; break;
-        case 7: enc = 5; page = 1; break;
-        case 8: enc = 5; page = 0; break;
-    }
-    eng_.Encoder(enc, page, delta, menu);
+    int p = KnobParam(knob, shift_);
+    const ParamDef &d = kParams[p];
+    eng_.Encoder(d.enc, d.page, delta, d.menu);
     touched_knob_ = knob;
-    char name[24], value[24];
-    KnobText(knob, menu, name, value);
-    Show(name, value);
+    char value[24];
+    ParamText(p, value);
+    Show(d.name, value);
 }
 
 void Surface::OnKnobTouch(int knob, bool on)
 {
-    if(!on)
+    if(!on || knob > 8)
         return;
+    int p = KnobParam(knob, false);
+    const ParamDef &d = kParams[p];
     if(delete_)
     {
         // Delete + touch = the encoder's click
-        switch(knob)
-        {
-            case 0:
-                eng_.Click(ENC_4_SW);
-                Show(page_ ? "GAIN/PAN" : "SPEED", "RESET");
-                break;
-            case 3:
-            case 4:
-            case 5:
-                eng_.Click(ENC_3_SW);
-                Show("FX", "RESET");
-                break;
-            case 6:
-                eng_.Click(ENC_5_SW);
-                Show("LOOP SPEED", "RESET");
-                break;
-        }
+        if(d.click < 0)
+            return;
+        eng_.SetKnobPage(d.enc, d.page);
+        eng_.Click(d.click);
+        Show(d.click == ENC_3_SW ? "EFFECTS" : d.click == ENC_4_SW ? (d.page ? "GAIN+PAN" : "SPEED") : d.name,
+             "RESET");
         return;
     }
-    if(knob > 8)
-        return;
     touched_knob_ = knob;
-    char name[24], value[24];
-    KnobText(knob, eng_.MenuActive(), name, value);
-    Show(name, value);
+    p = KnobParam(knob, shift_);
+    char value[24];
+    ParamText(p, value);
+    Show(kParams[p].name, value);
 }
 
 void Surface::OnButton(int cc, bool press)
@@ -344,9 +378,7 @@ void Surface::OnButton(int cc, bool press)
             if(press)
             {
                 page_ = cc == CC_RIGHT ? 1 : 0;
-                for(int k = 0; k < 3; k++)
-                    e.SetKnobPage(k, page_);
-                Show("KNOBS 1-3", page_ ? "GAIN ATK DEC" : "SPD STA END");
+                Show("KNOBS", page_ ? "PAGE 2" : "PAGE 1");
             }
             break;
 
@@ -491,130 +523,46 @@ void Surface::SettingsActivate(int dir)
 
 static void pct(char *out, float v) { snprintf(out, 24, "%d%%", (int)lrintf(v * 100.f)); }
 
-void Surface::KnobText(int knob, bool menu, char *name, char *value)
+void Surface::ParamText(int p, char *value)
 {
     daisy::Engine &x = eng_.Eng();
-    auto speed = [&](float ratio, bool rev) {
-        snprintf(value, 24, "%sx%.2f", rev ? "REV " : "", ratio);
-    };
-    if(menu)
+    switch(p)
     {
-        switch(knob)
+        case P_SPEED:
+        case P_SPEED_SNAP:
+            snprintf(value, 24, "%sx%.2f", x.GetReverse() ? "REV " : "", x.GetGlobalPitch());
+            return;
+        case P_START: pct(value, eng_.EncValue(0, 1)); return;
+        case P_END: pct(value, eng_.EncValue(0, 2)); return;
+        case P_WINDOW:
+            snprintf(value, 24, "%d-%d%%", (int)(eng_.EncValue(0, 1) * 100),
+                     (int)(eng_.EncValue(0, 2) * 100));
+            return;
+        case P_ATTACK:
+        case P_ATKDEC:
         {
-            case 0:
-                if(page_ == 0)
-                {
-                    strcpy(name, "SPEED SNAP");
-                    speed(x.GetGlobalPitch(), x.GetReverse());
-                }
-                else
-                {
-                    strcpy(name, "PAN");
-                    float p = x.GetPan();
-                    if(fabsf(p - .5f) < .01f)
-                        strcpy(value, "C");
-                    else
-                        snprintf(value, 24, "%s%d", p < .5f ? "L" : "R",
-                                 (int)lrintf(fabsf(p - .5f) * 200.f));
-                }
-                return;
-            case 1:
-            case 2:
-                if(page_ == 0)
-                {
-                    strcpy(name, "WINDOW");
-                    snprintf(value, 24, "%d-%d%%", (int)(eng_.EncValue(0, 1) * 100),
-                             (int)(eng_.EncValue(0, 2) * 100));
-                }
-                else
-                {
-                    strcpy(name, "ATK+DEC");
-                    pct(value, eng_.EncValue(1, 1));
-                }
-                return;
-            case 3:
-                strcpy(name, "DELAY TIME");
-                pct(value, eng_.DelayTime());
-                return;
-            case 4:
-                strcpy(name, "WARBLE");
-                pct(value, eng_.Warble());
-                return;
-            case 5:
-                strcpy(name, "RESONANCE");
-                pct(value, eng_.Resonance());
-                return;
-            case 6:
-                strcpy(name, "LOOP SNAP");
-                snprintf(value, 24, "x%.2f", x.GetLooperPitch());
-                return;
-            default:
-                strcpy(name, "COMP");
-                pct(value, eng_.FinalComp());
-                return;
+            float v = eng_.EncValue(1, 1);
+            snprintf(value, 24, "%.2fs", (powf(v, 3.f) + .01f) * 20.f + .001f);
+            return;
         }
-    }
-    switch(knob)
-    {
-        case 0:
-            if(page_ == 0)
-            {
-                strcpy(name, "SPEED");
-                speed(x.GetGlobalPitch(), x.GetReverse());
-            }
-            else
-            {
-                strcpy(name, "GAIN");
-                float v = eng_.EncValue(1, 0);
-                snprintf(value, 24, "x%.2f", 2.f * v * v + .01f);
-            }
+        case P_DECAY:
+        {
+            float v = eng_.EncValue(1, 2);
+            snprintf(value, 24, "%.2fs", (powf(v, 3.f) + .01f) * 4.f + .001f);
             return;
-        case 1:
-            if(page_ == 0)
-            {
-                strcpy(name, "START");
-                pct(value, eng_.EncValue(0, 1));
-            }
-            else
-            {
-                strcpy(name, "ATTACK");
-                float v = eng_.EncValue(1, 1);
-                snprintf(value, 24, "%.2fs", (powf(v, 3.f) + .01f) * 20.f + .001f);
-            }
-            return;
-        case 2:
-            if(page_ == 0)
-            {
-                strcpy(name, "END");
-                pct(value, eng_.EncValue(0, 2));
-            }
-            else
-            {
-                strcpy(name, "DECAY");
-                float v = eng_.EncValue(1, 2);
-                snprintf(value, 24, "%.2fs", (powf(v, 3.f) + .01f) * 4.f + .001f);
-            }
-            return;
-        case 3:
+        }
+        case P_SPACE:
             if(eng_.Opts().split_delay)
             {
                 float v = eng_.EncValue(0, 3);
-                strcpy(name, v < .5f ? "DELAY" : "REVERB");
-                pct(value, v < .5f ? (.5f - v) * 2.f : (v - .5f) * 2.f);
+                snprintf(value, 24, "%s %d%%", v < .5f ? "DLY" : "REV",
+                         (int)lrintf(fabsf(v - .5f) * 200.f));
             }
             else
-            {
-                strcpy(name, "SPACE");
                 pct(value, eng_.EncValue(0, 3));
-            }
             return;
-        case 4:
-            strcpy(name, "LOFI");
-            pct(value, eng_.EncValue(1, 3));
-            return;
-        case 5:
+        case P_FILTER:
         {
-            strcpy(name, "FILTER");
             float v = eng_.EncValue(2, 3);
             if(fabsf(v - .5f) < .02f)
                 strcpy(value, "OPEN");
@@ -623,22 +571,62 @@ void Surface::KnobText(int knob, bool menu, char *name, char *value)
                          (int)lrintf(fabsf(v - .5f) * 200.f));
             return;
         }
-        case 6:
-            strcpy(name, "LOOP SPEED");
-            if(x.IsLooperPlaying())
+        case P_LOOP:
+        case P_LOOP_SNAP:
+            if(x.IsLooperPlaying() || p == P_LOOP_SNAP)
                 snprintf(value, 24, "x%.2f", x.GetLooperPitch());
             else
                 strcpy(value, "SCRUB");
             return;
-        case 7:
-            strcpy(name, "INPUT");
-            pct(value, eng_.EncValue(1, 5));
+        case P_GAIN:
+        {
+            float v = eng_.EncValue(1, 0);
+            snprintf(value, 24, "x%.2f", 2.f * v * v + .01f);
             return;
-        default:
-            strcpy(name, "VOLUME");
-            pct(value, eng_.EncValue(0, 5));
+        }
+        case P_PAN:
+        {
+            float v = x.GetPan();
+            if(fabsf(v - .5f) < .01f)
+                strcpy(value, "C");
+            else
+                snprintf(value, 24, "%s%d", v < .5f ? "L" : "R", (int)lrintf(fabsf(v - .5f) * 200.f));
             return;
+        }
+        case P_LOFI: pct(value, eng_.EncValue(1, 3)); return;
+        case P_WARBLE: pct(value, eng_.Warble()); return;
+        case P_TIME: pct(value, eng_.DelayTime()); return;
+        case P_RES: pct(value, eng_.Resonance()); return;
+        case P_INPUT: pct(value, eng_.EncValue(1, 5)); return;
+        case P_COMP: pct(value, eng_.FinalComp()); return;
+        case P_VOLUME: pct(value, eng_.EncValue(0, 5)); return;
     }
+    value[0] = 0;
+}
+
+float Surface::ParamValue(int p)
+{
+    daisy::Engine &x = eng_.Eng();
+    switch(p)
+    {
+        case P_SPEED: return eng_.EncValue(0, 0);
+        case P_START: return eng_.EncValue(0, 1);
+        case P_END: return eng_.EncValue(0, 2);
+        case P_ATTACK: return eng_.EncValue(1, 1);
+        case P_DECAY: return eng_.EncValue(1, 2);
+        case P_SPACE: return eng_.EncValue(0, 3);
+        case P_FILTER: return eng_.EncValue(2, 3);
+        case P_LOOP: return eng_.EncValue(0, 4);
+        case P_GAIN: return eng_.EncValue(1, 0);
+        case P_PAN: return x.GetPan();
+        case P_LOFI: return eng_.EncValue(1, 3);
+        case P_WARBLE: return eng_.Warble();
+        case P_TIME: return eng_.DelayTime();
+        case P_RES: return eng_.Resonance();
+        case P_INPUT: return eng_.EncValue(1, 5);
+        case P_COMP: return eng_.FinalComp();
+    }
+    return 0.f;
 }
 
 /* ---- LEDs ------------------------------------------------------------------ */
@@ -1120,24 +1108,14 @@ void Surface::DrawMain()
     }
     else
     {
-        // at rest: the eight knobs, as the hardware's LEDs would show them
-        static const char *kn[2][8] = {
-            {"SPD", "STA", "END", "SPC", "LOF", "FLT", "LOP", "IN"},
-            {"GAN", "ATK", "DEC", "SPC", "LOF", "FLT", "LOP", "IN"}};
-        float vals[8] = {page_ ? eng_.EncValue(1, 0) : eng_.EncValue(0, 0),
-                         page_ ? eng_.EncValue(1, 1) : eng_.EncValue(0, 1),
-                         page_ ? eng_.EncValue(1, 2) : eng_.EncValue(0, 2),
-                         eng_.EncValue(0, 3),
-                         eng_.EncValue(1, 3),
-                         eng_.EncValue(2, 3),
-                         eng_.EncValue(0, 4),
-                         eng_.EncValue(1, 5)};
+        // at rest: this page's eight knobs
         for(int i = 0; i < 8; i++)
         {
+            int p  = kPage[page_][i];
             int cx = (i % 4) * 32, cy = y + (i / 4) * 13;
-            disp_.Text(cx, cy, kn[page_][i]);
+            disp_.Text(cx, cy, kParams[p].abbrev);
             disp_.Frame(cx, cy + 8, 28, 3);
-            disp_.HLine(cx, cy + 9, 1 + (int)(vals[i] * 27));
+            disp_.HLine(cx, cy + 9, 1 + (int)(ParamValue(p) * 27));
         }
     }
 

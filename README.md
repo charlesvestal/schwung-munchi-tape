@@ -35,8 +35,8 @@ card works.
 |---|---|
 | Pads | the keyboard, C3–C5 as piano rows |
 | Jog / steps 1–15 | choose a sample (Keys mode) |
-| Knobs 1–8 | Speed, Start, End, Space, Lofi, Filter, Loop speed, Input |
-| Left / Right | knobs 1–3 become Gain, Attack, Decay |
+| Knobs, page 1 | Speed, Start, End, Attack, Decay, Space, Filter, Loop speed |
+| Knobs, page 2 (Right) | Gain, Pan, Lofi, Warble, Delay time, Resonance, Input, Comp |
 | Volume knob | Volume |
 | Sample (hold) | record into the buffer |
 | Loop / Play | the looper |

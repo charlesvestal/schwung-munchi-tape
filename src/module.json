@@ -7,5 +7,10 @@
     "author": "CHOMPI Club / Chase Bliss (CHOMPI TAPE, MIT) · port: charlesvestal",
     "license": "MIT",
     "component_type": "tool",
-    "standalone": true
+    "standalone": true,
+    "boot_target": {
+        "id": "munchi-tape",
+        "name": "Munchi Tape",
+        "exec": "boot-entry.sh"
+    }
 }

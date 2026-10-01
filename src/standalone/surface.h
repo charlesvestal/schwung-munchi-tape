@@ -10,9 +10,11 @@
  *                 the same keys are modes, banks, inputs, erase/copy/save
  *   Sample        the CHOMPI key in record mode: record into the buffer
  *   Loop / Play   the looper's two keys (Rec is a second Loop)
- *   knobs 1-8     Speed, Start, End, Space, Lofi, Filter, Loop speed, Input;
- *                 Left/Right flip knobs 1-3 to Gain, Attack, Decay
- *   volume knob   Volume;  Shift + any knob = the menu page's encoder
+ *   knobs 1-8     page 1: Speed, Start, End, Attack, Decay, Space, Filter,
+ *                 Loop speed; page 2 (Right): Gain, Pan, Lofi, Warble,
+ *                 Delay time, Resonance, Input, Compressor
+ *   volume knob   Volume;  Shift: stepped speeds, the sliding window,
+ *                 attack+decay together (the menu page's encoder gestures)
  *   Delete+touch  an encoder click (reset pitch / FX / loop speed)
  *   Track 1-4     auto-loop, sustain, monitor mode, record switch
  *   steps 1-15    slots (Keys: select, Kit: play); jog browses slots
@@ -42,6 +44,8 @@ class Surface
     void InvalidateLeds();
 
     bool WantsExit() const { return exit_; }
+    /** Tests: draw the current screen and return its pixels (128 x 64). */
+    const uint8_t *TestScreen() { Draw(); return disp_.Pixels(); }
 
     /* diagnostics: what Move's jack-detect CC said, for the log */
     int jack_cc_value_ = -1;
@@ -75,7 +79,9 @@ class Surface
     void DrawSettings();
     void DrawSampleBar(int y);
     void DrawLooper(int y);
-    void KnobText(int knob, bool menu, char *name, char *value);
+    int   KnobParam(int knob, bool shift) const;
+    void  ParamText(int param, char *value);
+    float ParamValue(int param);
 
     void SettingsActivate(int dir);
     int  NextSlot(int from, int dir);
