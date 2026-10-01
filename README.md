@@ -7,6 +7,8 @@ Munchi Tape is a [Schwung](https://github.com/charlesvestal/schwung) standalone
 tool. Launched from Schwung's Tools menu, it stops Move and runs the whole device
 itself (pads, knobs, buttons, lights, screen, audio), the way the CHOMPI's
 firmware runs its hardware. Press Back twice to hand Move back.
+Its sibling is [Munchi Wave](https://github.com/charlesvestal/schwung-munchi-wave),
+the CHOMPI's wavetable synth.
 
 It is a port of the firmware CHOMPI Club released as open source
 ([CHOMPI-Club/CHOMPI](https://github.com/CHOMPI-Club/CHOMPI), MIT). It is not an
