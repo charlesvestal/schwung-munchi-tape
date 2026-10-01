@@ -32,10 +32,10 @@ jobs:
 
       - name: Check the payload
         run: |
-          test -f dist/munchi-module.tar.gz
-          file dist/munchi/standalone | grep -q aarch64
-          test "$(ls dist/munchi/card/*.wav | wc -l)" -eq 84
-          max=$(strings dist/munchi/standalone | grep -oE 'GLIBC_[0-9]+\.[0-9]+' | sed 's/GLIBC_//' | sort -V | tail -1)
+          test -f dist/munchi-tape-module.tar.gz
+          file dist/munchi-tape/standalone | grep -q aarch64
+          test "$(ls dist/munchi-tape/card/*.wav | wc -l)" -eq 84
+          max=$(strings dist/munchi-tape/standalone | grep -oE 'GLIBC_[0-9]+\.[0-9]+' | sed 's/GLIBC_//' | sort -V | tail -1)
           echo "max GLIBC: $max"
           # Move ships glibc 2.35
           [ "$(printf '%s\n2.35\n' "$max" | sort -V | tail -1)" = "2.35" ]
@@ -44,7 +44,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/munchi-module.tar.gz
+          files: dist/munchi-tape-module.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -52,11 +52,11 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/munchi-module.tar.gz"
+          URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/munchi-tape-module.tar.gz"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin main
           git checkout -B main origin/main
-          printf '{\n  "version": "%s",\n  "download_url": "%s",\n  "install_path": "modules/tools/munchi"\n}\n' "$VERSION" "$URL" > release.json
+          printf '{\n  "version": "%s",\n  "download_url": "%s",\n  "install_path": "modules/tools/munchi-tape"\n}\n' "$VERSION" "$URL" > release.json
           git add release.json
           git diff --cached --quiet || { git commit -m "release ${GITHUB_REF_NAME}: update release.json"; git push origin main; }

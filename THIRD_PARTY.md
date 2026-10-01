@@ -1,6 +1,6 @@
-# Third-party work in Munchi
+# Third-party work in Munchi Tape
 
-Munchi is a port of **CHOMPI TAPE 2.0** to Ableton Move. Everything it is built
+Munchi Tape is a port of **CHOMPI TAPE 2.0** to Ableton Move. Everything it is built
 from is MIT-licensed; the notices below travel with every copy.
 
 | Component | Copyright | License | Where |
@@ -21,5 +21,5 @@ under the MIT license.
 
 The CHOMPI name, logo, character and related marks are trademarks of CHOMPI
 Club and are **not** covered by the MIT license (`docs/CHOMPI-TRADEMARKS.md`).
-Munchi is an independent port, not an official CHOMPI Club release; it is
+Munchi Tape is an independent port, not an official CHOMPI Club release; it is
 named differently for that reason and uses no CHOMPI artwork.

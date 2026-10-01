@@ -1,7 +1,7 @@
 {
-    "id": "munchi",
-    "name": "Munchi",
-    "abbrev": "MUN",
+    "id": "munchi-tape",
+    "name": "Munchi Tape",
+    "abbrev": "MTAPE",
     "version": "0.1.0",
     "description": "CHOMPI TAPE 2.0 on Move: a 7-voice chromatic sampler and varispeed tape looper with the full factory sample card, delay, reverb, lofi and warble. Takes over Move until you exit.",
     "author": "CHOMPI Club / Chase Bliss (CHOMPI TAPE, MIT) · port: charlesvestal",

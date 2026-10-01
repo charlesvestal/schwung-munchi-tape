@@ -4,7 +4,7 @@
 # The card is 84 samples, ~107 MB of WAV. It is not committed here: it is
 # fetched from the upstream repository at a fixed commit, so a release is
 # reproducible and this repo stays small. The "_double" files and firmware
-# binary on the upstream card are left out -- Munchi derives the 2x read
+# binary on the upstream card are left out -- Munchi Tape derives the 2x read
 # from the sample itself and writes "_double" files only for slots it saves.
 set -euo pipefail
 

@@ -1,4 +1,4 @@
-# Munchi build environment. Targets: Ableton Move (aarch64 Linux, glibc 2.35 -- so Ubuntu 22.04, not bookworm)
+# Munchi Tape build environment. Targets: Ableton Move (aarch64 Linux, glibc 2.35 -- so Ubuntu 22.04, not bookworm)
 FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 

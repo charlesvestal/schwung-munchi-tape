@@ -1,4 +1,4 @@
-/* Munchi -- a standalone Schwung tool.
+/* Munchi Tape -- a standalone Schwung tool.
  *
  * Launched from Schwung's Tools menu by launch-standalone.sh, which stops Move
  * and frees /dev/ablspi0.0. From then until Back is pressed twice this binary
@@ -38,7 +38,7 @@ using namespace munchi;
 static volatile sig_atomic_t g_running = 1;
 static void on_signal(int) { g_running = 0; }
 
-static const char *kDefaultCard = "/data/UserData/UserLibrary/Samples/Schwung/Munchi";
+static const char *kDefaultCard = "/data/UserData/UserLibrary/Samples/Schwung/Munchi Tape";
 
 static std::string module_dir()
 {
@@ -60,7 +60,7 @@ static void log_line(const char *msg)
     FILE *f = fopen("/data/UserData/schwung/debug.log", "a");
     if(!f)
         return;
-    fprintf(f, "munchi: %s\n", msg);
+    fprintf(f, "munchi-tape: %s\n", msg);
     fclose(f);
 }
 
@@ -75,6 +75,16 @@ int main(void)
     std::string mod     = module_dir();
     const char *card_env = getenv("MUNCHI_CARD");
     std::string card    = card_env && *card_env ? card_env : kDefaultCard;
+
+    // This tool was first published as "munchi", whose card was
+    // Samples/Schwung/Munchi. Adopt that folder (and whatever was saved to
+    // it) rather than seeding a second copy of the factory card beside it.
+    if(!card_env || !*card_env)
+    {
+        const std::string legacy = "/data/UserData/UserLibrary/Samples/Schwung/Munchi";
+        if(access(card.c_str(), F_OK) != 0 && access((legacy + "/.munchi-card").c_str(), F_OK) == 0)
+            rename(legacy.c_str(), card.c_str());
+    }
 
     static MunchiEngine engine; // large: keep it off the stack
     engine.LoadOptions(card + "/options.json");

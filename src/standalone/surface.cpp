@@ -447,7 +447,7 @@ int Surface::NextSlot(int from, int dir)
 
 static const char *kSettingNames[9] = {
     "RECORD LATCH", "TAPE SLEW",  "MONITOR",     "SPLIT DELAY", "SHIFT SNAP",
-    "PAD VELOCITY", "MIDI IN CH", "MIDI OUT CH", "EXIT MUNCHI",
+    "PAD VELOCITY", "MIDI IN CH", "MIDI OUT CH", "EXIT",
 };
 
 void Surface::SettingsActivate(int dir)
@@ -916,7 +916,7 @@ void Surface::Draw()
         exit_prompt_ = false;
     if(exit_prompt_)
     {
-        disp_.TextCentered(18, "EXIT MUNCHI?", 1);
+        disp_.TextCentered(18, "EXIT MUNCHI TAPE?", 1);
         disp_.TextCentered(34, "BACK AGAIN TO EXIT", 1);
         disp_.TextCentered(46, "LOOPER + BUFFER ARE LOST", 1);
         return;

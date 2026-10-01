@@ -1,5 +1,5 @@
 {
-  "title": "Munchi",
+  "title": "Munchi Tape",
   "children": [
     {
       "title": "Overview",
@@ -57,7 +57,9 @@
         "into the buffer.",
         "",
         "Track 4: monitor",
-        "the input.",
+        "a line input.",
+        "The mic is never",
+        "monitored.",
         "",
         "Shift + F#3/G#3/",
         "A#3: Mic, Line,",
@@ -99,7 +101,7 @@
         "Samples live in",
         "UserLibrary/",
         "Samples/Schwung/",
-        "Munchi",
+        "Munchi Tape",
         "",
         "jammi_a1.wav =",
         "Keys, bank A,",

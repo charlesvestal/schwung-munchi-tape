@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Build Munchi for Move (aarch64). Uses Docker unless CROSS_PREFIX is set.
+# Build Munchi Tape for Move (aarch64). Uses Docker unless CROSS_PREFIX is set.
 #
-#   ./scripts/build.sh        -> dist/munchi/ and dist/munchi-module.tar.gz
+#   ./scripts/build.sh        -> dist/munchi-tape/ and dist/munchi-tape-module.tar.gz
 #
 # The factory card is fetched on the HOST side (it needs git and the
 # network), before the container compiles; see fetch-card.sh.
@@ -32,8 +32,8 @@ if [ ! -f build/card/jammi_a1.wav ]; then
     exit 1
 fi
 
-MODULE_DIR="dist/munchi"
-TARBALL="dist/munchi-module.tar.gz"
+MODULE_DIR="dist/munchi-tape"
+TARBALL="dist/munchi-tape-module.tar.gz"
 mkdir -p build dist
 rm -rf "$MODULE_DIR"
 mkdir -p "$MODULE_DIR"
@@ -55,6 +55,7 @@ cat build/standalone > "$MODULE_DIR/standalone"
 chmod +x "$MODULE_DIR/standalone"
 cat src/help.json > "$MODULE_DIR/help.json"
 cat README.md > "$MODULE_DIR/README.md"
+cat docs/MANUAL.md > "$MODULE_DIR/MANUAL.md"
 cat LICENSE > "$MODULE_DIR/LICENSE"
 cat THIRD_PARTY.md > "$MODULE_DIR/THIRD_PARTY.md"
 mkdir -p "$MODULE_DIR/card"
@@ -63,6 +64,6 @@ for f in build/card/*; do
 done
 
 rm -f "$TARBALL"
-( cd dist && tar -czf "$(basename "$TARBALL")" munchi )
+( cd dist && tar -czf "$(basename "$TARBALL")" munchi-tape )
 
 echo "Output: $MODULE_DIR/  Tarball: $TARBALL ($(du -h "$TARBALL" | cut -f1))"
